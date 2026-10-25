@@ -1,0 +1,26 @@
+name: Independent Windows public update test
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: independent-windows-update
+  cancel-in-progress: false
+jobs:
+  windows:
+    if: github.actor == github.repository_owner
+    runs-on: windows-2022
+    timeout-minutes: 25
+    steps:
+      - name: Fetch test harness from this commit without developer credentials
+        shell: pwsh
+        run: |
+          Invoke-WebRequest "https://raw.githubusercontent.com/$env:GITHUB_REPOSITORY/$env:GITHUB_SHA/validation/public-windows-test.cjs" -OutFile public-windows-test.cjs
+          Invoke-WebRequest "https://raw.githubusercontent.com/$env:GITHUB_REPOSITORY/$env:GITHUB_SHA/validation/native-update.ps1" -OutFile native-update.ps1
+          npm install --no-save --ignore-scripts playwright-core@1.62.1
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Validate public updates, real installer, rollback and restart
+        shell: pwsh
+        env:
+          RIYADA_QA_LICENSE_KEY: ${{ secrets.RIYADA_QA_LICENSE_KEY }}
+        run: node public-windows-test.cjs
