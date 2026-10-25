@@ -17,6 +17,7 @@ jobs:
         run: |
           Invoke-WebRequest "https://raw.githubusercontent.com/$env:GITHUB_REPOSITORY/$env:GITHUB_SHA/validation/public-windows-test.cjs" -OutFile public-windows-test.cjs
           Invoke-WebRequest "https://raw.githubusercontent.com/$env:GITHUB_REPOSITORY/$env:GITHUB_SHA/validation/native-update.ps1" -OutFile native-update.ps1
+          Invoke-WebRequest "https://raw.githubusercontent.com/$env:GITHUB_REPOSITORY/$env:GITHUB_SHA/validation/hold-file-lock.ps1" -OutFile hold-file-lock.ps1
           npm install --no-save --ignore-scripts playwright-core@1.62.1
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Validate public updates, real installer, rollback and restart
