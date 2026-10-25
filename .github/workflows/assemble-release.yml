@@ -1,0 +1,29 @@
+name: Assemble verified release assets
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Draft release tag to assemble
+        required: true
+        type: string
+permissions:
+  contents: write
+concurrency:
+  group: assemble-${{ inputs.tag }}
+  cancel-in-progress: false
+jobs:
+  assemble:
+    if: github.actor == github.repository_owner
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Fetch verifier from the dispatched commit
+        shell: bash
+        run: |
+          curl --fail --silent --show-error "https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$GITHUB_SHA/validation/assemble.py" -o "$RUNNER_TEMP/assemble.py"
+      - name: Assemble and verify without publishing
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: python "$RUNNER_TEMP/assemble.py"
